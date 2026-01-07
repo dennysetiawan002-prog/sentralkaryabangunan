@@ -111,12 +111,13 @@ function renderItemPesanan() {
       <button onclick="ubahQty(${i}, 1)">+</button><br>
       Subtotal: <strong>Rp ${formatRupiah(sub)}</strong>
     `;
+
     ul.appendChild(li);
   });
 }
 
 /***********************
- * EDIT QTY
+ * UBAH QTY
  ***********************/
 function ubahQty(index, delta) {
   itemPesanan[index].qty += delta;
@@ -233,7 +234,7 @@ async function editPesanan(id_pesanan) {
 }
 
 /***********************
- * RINCIAN PESANAN
+ * RINCIAN + CETAK THERMAL
  ***********************/
 async function lihatRincian(id_pesanan) {
   const data = await apiGet("getPesanan");
@@ -243,86 +244,88 @@ async function lihatRincian(id_pesanan) {
     return;
   }
 
-  // ===== KONFIG TOKO =====
-  const LOGO_URL = "https://github.com/dennysetiawan002-prog/sentralkaryabangunan/blob/main/sentral%20karya%20bangunan%20logo.jpg?raw=true"; // ganti logo toko
+  // === KONFIG TOKO ===
+  const LOGO_URL = ""; // isi URL publik jika ada
   const NAMA_TOKO = "SENTRAL KARYA BANGUNAN";
-  const ALAMAT_TOKO = "Jl. Bukit Pesagi Lampung Utara";
-  const KONTAK_TOKO = "HP/WA: 085366164414";
+  const ALAMAT_TOKO = "Jl. Raya Contoh No. 12";
+  const KONTAK_TOKO = "WA 08xxxxxxxxxx";
 
-  // ===== DATA PESANAN =====
-  const namaPelanggan = rows[0][3];
-  const namaSales = rows[0][9];
-  const tanggal = new Date(rows[0][1]).toLocaleString();
+  const pelanggan = rows[0][3];
+  const sales = rows[0][9];
+  const tanggal = new Date(rows[0][1]).toLocaleString("id-ID");
 
   let total = 0;
 
   let html = `
-    <div style="text-align:center">
-      <img src="${LOGO_URL}" style="max-width:80px"><br>
-      <strong style="font-size:16px">${NAMA_TOKO}</strong><br>
-      <small>${ALAMAT_TOKO}</small><br>
-      <small>${KONTAK_TOKO}</small>
-    </div>
-    <hr>
-    <strong>Pelanggan:</strong> ${namaPelanggan}<br>
-    <strong>Sales:</strong> ${namaSales}<br>
-    <strong>Tanggal:</strong> ${tanggal}
-    <hr>
+    <div class="nota">
+      ${LOGO_URL ? `<img src="${LOGO_URL}" class="logo">` : ``}
+      <div class="center bold">${NAMA_TOKO}</div>
+      <div class="center small">${ALAMAT_TOKO}</div>
+      <div class="center small">${KONTAK_TOKO}</div>
+      <hr>
+      <div class="small">
+        Pelanggan : ${pelanggan}<br>
+        Sales     : ${sales}<br>
+        Tanggal   : ${tanggal}
+      </div>
+      <hr>
   `;
 
   rows.forEach(r => {
     const kode = r[4];
-    const nama = r[5];
     const qty = Number(r[7]);
     const harga = Number(r[10]) || mapHargaProduk[kode] || 0;
     const sub = qty * harga;
     total += sub;
 
     html += `
-      ${nama}<br>
-      ${qty} × Rp ${formatRupiah(harga)} = 
-      <strong>Rp ${formatRupiah(sub)}</strong>
-      <hr>
+      <div class="row">
+        <div>${r[5]}</div>
+        <div>${qty} x ${formatRupiah(harga)}</div>
+      </div>
+      <div class="right bold">Rp ${formatRupiah(sub)}</div>
     `;
   });
 
   html += `
-    <h3 style="text-align:right">
-      TOTAL: Rp ${formatRupiah(total)}
-    </h3>
-    <div style="text-align:center">
-      <button onclick="window.print()">🖨️ Cetak</button>
+      <hr>
+      <div class="row bold">
+        <div>TOTAL</div>
+        <div>Rp ${formatRupiah(total)}</div>
+      </div>
+      <hr>
+      <div class="center small">Terima kasih 🙏</div>
+      <button onclick="window.print()" class="btn-print">🖨️ CETAK</button>
     </div>
   `;
 
   const win = window.open("", "_blank");
   win.document.write(`
-    <html>
-    <head>
-      <title>Nota Penjualan</title>
-      <style>
-        body {
-          font-family: monospace;
-          padding: 10px;
-        }
-        img { margin-bottom: 5px; }
-        button {
-          padding: 8px 14px;
-          font-size: 14px;
-        }
-        @media print {
-          button { display: none; }
-        }
-      </style>
-    </head>
-    <body>
-      ${html}
-    </body>
-    </html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nota Thermal</title>
+<style>
+@page { size: auto; margin: 0; }
+body { margin: 0; font-family: monospace; }
+.nota { max-width: 300px; padding: 10px; }
+.logo { max-width: 120px; margin: 0 auto 6px; display: block; }
+.center { text-align: center; }
+.right { text-align: right; }
+.bold { font-weight: bold; }
+.small { font-size: 12px; }
+.row { display: flex; justify-content: space-between; font-size: 13px; }
+hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+.btn-print { width: 100%; padding: 8px; margin-top: 10px; }
+@media print { .btn-print { display: none; } }
+</style>
+</head>
+<body>
+${html}
+</body>
+</html>
   `);
 }
-
-
 
 /***********************
  * INIT
