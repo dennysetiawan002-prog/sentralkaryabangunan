@@ -1,0 +1,110 @@
+// ===============================
+// LOAD TRANSAKSI + CACHE
+// ===============================
+async function loadTransaksi() {
+  const CACHE_KEY = "cache_transaksi";
+  const CACHE_AGE = 10 * 60 * 1000;
+
+  const cached = getCache(CACHE_KEY, CACHE_AGE);
+  if (cached) {
+    renderTransaksi(cached);
+  }
+
+  const fresh = await apiGet("getTransaksi");
+  if (!document.getElementById("listTransaksi")) return;
+
+  setCache(CACHE_KEY, fresh);
+  renderTransaksi(fresh);
+}
+
+// ===============================
+// RENDER TRANSAKSI (GROUP BY ID)
+// ===============================
+function renderTransaksi(data) {
+  const ul = document.getElementById("listTransaksi");
+  if (!ul) return;
+
+  ul.innerHTML = "";
+
+  const group = {};
+  const role = localStorage.getItem("role_sales");
+
+  // skip header
+  data.slice(1).forEach(r => {
+    const id = r[0];
+
+    if (!group[id]) {
+      group[id] = {
+        id: id,
+        pelanggan: r[3],
+        items: []
+      };
+    }
+
+    group[id].items.push({
+      kode: r[4],
+      nama: r[5],
+      qty: r[7]
+    });
+  });
+
+  Object.values(group).forEach(trx => {
+    const li = document.createElement("li");
+
+    const itemsHtml = trx.items
+      .map(it => {
+        let btn = "";
+        if (role === "admin") {
+          btn =
+            ' <button style="color:red" ' +
+            'onclick="hapusItemTransaksi(\'' +
+            trx.id + '\',\'' + it.kode +
+            '\')">❌</button>';
+        }
+        return it.nama + " x " + it.qty + btn;
+      })
+      .join("<br>");
+
+    li.innerHTML =
+      "<strong>" + trx.id + "</strong><br>" +
+      trx.pelanggan + "<br>" +
+      "<small>" + itemsHtml + "</small>";
+
+    ul.appendChild(li);
+  });
+
+  if (ul.children.length === 0) {
+    ul.innerHTML = "<li>Belum ada transaksi</li>";
+  }
+}
+
+// ===============================
+// HAPUS ITEM TRANSAKSI → BALIK KE PESANAN
+// ADMIN ONLY
+// ===============================
+async function hapusItemTransaksi(id_pesanan, kode_produk) {
+  if (!confirm("Kembalikan item ini ke pesanan?")) return;
+
+  const res = await apiPost({
+    action: "hapusTransaksiItem",
+    id_pesanan,
+    kode_produk,
+    role: localStorage.getItem("role_sales")
+  });
+
+  if (res.status === "ok") {
+    localStorage.removeItem("cache_transaksi");
+    localStorage.removeItem("cache_pesanan");
+    alert("Item dikembalikan ke pesanan");
+    loadTransaksi();
+  } else {
+    alert(res.message || "Gagal memproses");
+  }
+}
+
+// ===============================
+// INIT
+// ===============================
+if (document.getElementById("listTransaksi")) {
+  loadTransaksi();
+}

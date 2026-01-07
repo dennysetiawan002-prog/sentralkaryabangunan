@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width">
+  <title>Pesanan</title>
+</head>
+<body>
+
+<h3>Input Pesanan</h3>
+
+<!-- PILIH PELANGGAN -->
+<label>Pelanggan</label><br>
+<select id="pelanggan"></select>
+<br><br>
+
+<!-- PILIH PRODUK -->
+<label>Produk</label><br>
+<select id="produk"></select>
+<br><br>
+
+<!-- JUMLAH -->
+<label>Jumlah (Qty)</label><br>
+<input type="number" id="qty" value="1" min="1">
+<br><br>
+
+<!-- CATATAN / STATUS -->
+<label>Status</label><br>
+<select id="status">
+  <option value="PESAN">PESAN</option>
+  <option value="DIPROSES">DIPROSES</option>
+</select>
+<br><br>
+<button type="button" onclick="tambahItem()">➕ Tambah Produk</button>
+
+<h4>Item Pesanan</h4>
+<ul id="listItemPesanan"></ul>
+
+<br>
+<button onclick="simpanPesananMulti()">Simpan Pesanan</button>
+
+<hr>
+
+<h3>Daftar Pesanan</h3>
+<ul id="listPesanan"></ul>
+
+<script src="js/api.js"></script>
+<script src="js/pesanan.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width">
+<title>Kasir</title>
+</head>
+<body>
+
+<script>
+  // paksa setup awal
+  if (!localStorage.getItem("role_sales")) {
+    location.href = "setup.html";
+  }
+</script>
+
+<h2>Menu Utama Kasir</h2>
+
+<p>
+  Nama: <b id="namaUser"></b><br>
+  Role: <b id="roleUser"></b>
+</p>
+
+<hr>
+
+<button onclick="location.href='pelanggan.html'">Pelanggan</button><br><br>
+<button onclick="location.href='produk.html'">Produk</button><br><br>
+<button onclick="location.href='pesanan.html'">Pesanan</button><br><br>
+
+
+<script>
+  document.getElementById("namaUser").innerText =
+    localStorage.getItem("nama_sales");
+
+  document.getElementById("roleUser").innerText =
+    localStorage.getItem("role_sales");
+</script>
+
+</body>
+</html>

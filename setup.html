@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width">
+  <title>Setup Awal</title>
+</head>
+<body>
+
+<h3>Setup Pengguna</h3>
+
+<input id="nama" placeholder="Nama pengguna"><br><br>
+
+<select id="role">
+  <option value="">Pilih Peran</option>
+  <option value="admin">Admin</option>
+  <option value="sales">Sales</option>
+</select><br><br>
+
+<input id="password" placeholder="Password Admin" style="display:none"><br><br>
+
+<button onclick="simpanSetup()">Masuk</button>
+
+<script src="js/api.js"></script>
+<script>
+document.getElementById("role").onchange = function () {
+  document.getElementById("password").style.display =
+    this.value === "admin" ? "block" : "none";
+};
+
+async function simpanSetup() {
+  const nama = document.getElementById("nama").value.trim();
+  const role = document.getElementById("role").value;
+  const pass = document.getElementById("password").value;
+
+  if (!nama || !role) {
+    alert("Nama dan peran wajib diisi");
+    return;
+  }
+
+  // cek user terdaftar
+  const cek = await apiGet("cekUser&nama=" + encodeURIComponent(nama));
+  if (!cek.valid || cek.role !== role) {
+    alert("Akses ditolak");
+    return;
+  }
+
+  if (role === "admin") {
+    const cekAdmin = await apiGet("cekAdmin&pass=" + encodeURIComponent(pass));
+    if (!cekAdmin.valid) {
+      alert("Password admin salah");
+      return;
+    }
+  }
+
+  localStorage.setItem("nama_sales", nama);
+  localStorage.setItem("role_sales", role);
+  localStorage.setItem("setup_done", "YA");
+
+  location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
